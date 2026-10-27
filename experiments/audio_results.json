@@ -1,0 +1,96 @@
+{
+ "length": [
+  {
+   "label": "ASCII 20",
+   "bytes": 40,
+   "duration_s": 1.72,
+   "enc_ms": 1.9,
+   "dec_ms": 4.2,
+   "success": "20/20"
+  },
+  {
+   "label": "ASCII 50",
+   "bytes": 70,
+   "duration_s": 2.92,
+   "enc_ms": 1.3,
+   "dec_ms": 4.6,
+   "success": "20/20"
+  },
+  {
+   "label": "ASCII 100",
+   "bytes": 120,
+   "duration_s": 4.92,
+   "enc_ms": 2.3,
+   "dec_ms": 8.4,
+   "success": "20/20"
+  },
+  {
+   "label": "ASCII 150",
+   "bytes": 170,
+   "duration_s": 6.92,
+   "enc_ms": 3.2,
+   "dec_ms": 11,
+   "success": "20/20"
+  },
+  {
+   "label": "ASCII 200",
+   "bytes": 220,
+   "duration_s": 8.92,
+   "enc_ms": 3.9,
+   "dec_ms": 13.8,
+   "success": "20/20"
+  },
+  {
+   "label": "Arabic 50 chars",
+   "bytes": 120,
+   "duration_s": 4.92,
+   "enc_ms": 2.1,
+   "dec_ms": 7.6,
+   "success": "20/20"
+  }
+ ],
+ "noise": [
+  {
+   "snr_db": 30,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": 20,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": 10,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": 5,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": 0,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": -5,
+   "success": 40,
+   "trials": 40,
+   "rate_pct": 100
+  },
+  {
+   "snr_db": -10,
+   "success": 37,
+   "trials": 40,
+   "rate_pct": 93
+  }
+ ]
+}
