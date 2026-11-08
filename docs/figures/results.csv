@@ -1,0 +1,9 @@
+id,ok,a_ms,b_ms,enc_ms,dec_ms,ratio,acc,v_conf,v_ok,lang,total_ms,models
+D409463CC6784AD5B4BADF76B3AC9407,1,1348.89,2243.38,32.700000047683716,66.0,0.84,1.0,0.9,0,en,3690.970000047684,analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+12292F4E736B43C781945ED8D69C6722,1,1250.94,2330.91,62.0,69.60000002384186,0.85,1.0,1.0,1,en,3713.4500000238418,analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+F40D345627084581B50EF857A0B97A74,1,1011.79,1492.52,0.0,0.0,1.05,1.0,0.8,1,en,2504.31,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+2627DEE8163D42EC8732C336BD6FB8F2,1,1341.64,1481.67,0.0,0.0,1.44,1.0,0.95,1,en,2823.3100000000004,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+FF182F22A0454DBD8855774AE4E79568,1,1033.84,1579.45,0.0,0.0,1.19,1.0,0.2,1,en,2613.29,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+55FC4D6D2C0F4106A5A90E3F71C5F1B4,1,1035.18,1928.16,0.0,0.0,1.43,1.0,0.2,0,en,2963.34,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+375CE343963848FB9680D16039B3428F,1,972.12,1617.04,0.0,0.0,1.07,1.0,0.5,1,en,2589.16,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b
+1B1541F4F49C4ED9B05413686977D11B,1,1123.09,1491.26,0.0,0.0,0.93,1.0,0.6,1,en,2614.35,planner=openai/gpt-oss-20b;analyst=openai/gpt-oss-120b;verifier=qwen/qwen3.8-27b

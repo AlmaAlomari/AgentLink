@@ -1,121 +1,625 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AgentLink — AI Agent Communication Bridge</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d19">
+<title>AgentLink — AI Agent Communication Bridge</title>
 <style>
-:root{--bg:#070b14;--c:#0f1626;--b:#1d2a44;--t:#e6ebf7;--m:#8190b0;--a:#5b8cff;--cy:#22d3ee;--g:#34d399;--r:#f87171;--y:#fbbf24}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:14px Inter,system-ui,sans-serif;display:flex;min-height:100vh}
-aside{width:210px;padding:18px 12px;border-right:1px solid var(--b);position:sticky;top:0;height:100vh;flex-shrink:0}aside h1{font-size:17px;margin:0 8px 2px}aside small{color:var(--m);display:block;margin:0 8px 18px;font-size:11px}
-aside a{display:block;padding:9px 12px;border-radius:8px;color:var(--m);cursor:pointer}aside a.on,aside a:hover{background:var(--c);color:var(--t)}.sw{margin:18px 8px;font-size:12px;color:var(--m)}.sw label,.sw select{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-main{flex:1;padding:22px;min-width:0;max-width:1150px}section{display:none}section.on{display:block}h2{margin:0 0 14px}
-.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:12px}.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
-.card h3{margin:0 0 8px;font-size:13px;display:flex;justify-content:space-between}.dot{color:var(--g)}.l{color:var(--m);font-size:12px}
-textarea,input,select{background:var(--bg);color:var(--t);border:1px solid var(--b);border-radius:8px;padding:9px;font:inherit;width:100%}button{background:var(--a);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer}button.g{background:var(--c);border:1px solid var(--b);color:var(--t)}button:disabled{opacity:.5}
-pre{background:var(--bg);border-radius:8px;padding:9px;margin:6px 0;font-size:11.5px;white-space:pre-wrap;word-break:break-all;max-height:170px;overflow:auto;color:var(--cy)}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pipe{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:5px 10px;border-radius:99px;border:1px solid var(--b);font-size:11px;color:var(--m);transition:.3s}.chip.on{color:var(--t);border-color:var(--a);background:#5b8cff22}.chip.cur{border-color:var(--cy);box-shadow:0 0 12px #22d3ee66;color:var(--cy)}
-canvas{width:100%;height:110px;background:var(--bg);border-radius:8px}.k{font-size:22px;font-weight:700}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 8px;border-bottom:1px solid var(--b);text-align:start;vertical-align:top}th{color:var(--m)}
-.ok{color:var(--g)}.bad{color:var(--r)}.tag{padding:2px 8px;border-radius:99px;background:#5b8cff22;font-size:11px;margin-right:4px}.bars{display:flex;gap:5px;align-items:flex-end;height:80px}.bars i{flex:1;background:var(--a);border-radius:3px 3px 0 0}
-@media(max-width:760px){body{flex-direction:column}aside{width:100%;height:auto;position:static}}
-</style></head><body>
-<div id="auth" style="display:none;position:fixed;inset:0;background:#070b14ee;z-index:9;align-items:center;justify-content:center"><div class="card" style="width:340px"><h3 style="font-size:16px">🔗 AgentLink — Sign in</h3><input id="em" type="email" placeholder="Email" style="margin-bottom:8px"><input id="pw" type="password" placeholder="Password (6+ characters)" style="margin-bottom:8px"><div class="row"><button onclick="auth('login')">Log in</button><button class="g" onclick="auth('register')">Create account</button></div><div id="aerr" class="l bad" style="margin-top:8px"></div><div class="l" style="margin-top:8px">The first account becomes admin. Do not enter real personal data.</div></div></div>
-<aside><h1>🔗 AgentLink</h1><small>AI Agent Communication Bridge</small><a data-p="console" class="on">Console</a><a data-p="registry">Agent Registry</a><a data-p="gateway">Agent Gateway</a><a data-p="data">My Data</a><a data-p="tasks">Tasks & Telegram</a><a data-p="metrics">Metrics & Logs</a>
-<div class="sw"><label><input type="checkbox" id="live" style="width:auto"><span id="modet">Demo Mode</span></label><select id="lang"><option value="en">English</option><option value="ar">العربية</option></select><label><input type="checkbox" id="mute" style="width:auto"> Mute playback</label><label><input type="checkbox" id="tts" style="width:auto"> Read answer aloud</label><label><input type="checkbox" id="autosend" style="width:auto"> Auto-send after speaking</label><label><input type="checkbox" id="mask" style="width:auto" checked> Mask emails/numbers</label><div id="hs"></div><div id="who" style="margin-top:8px"></div><button class="g" style="margin-top:8px;padding:6px 10px" onclick="logout()">Log out</button></div></aside>
-<main>
-<section id="console" class="on"><h2>Agent Communication Console</h2>
-<div class="card"><textarea id="msg" rows="2">Analyze customer complaints and tell me the three most common problems.</textarea><div class="row" style="margin-top:8px"><button id="send">Send to Agent A</button><button class="g" id="mic" onclick="mic()">🎤 Speak</button><button class="g" onclick="replay(0)">🔊 Play request signal</button><button class="g" onclick="replay(1)">🔊 Play response signal</button><span class="l" id="err" style="color:var(--r)"></span></div></div>
-<div class="pipe" id="pipe"></div>
-<div class="g3"><div class="card"><h3>🧭 Agent A — Planner <span class="dot">● Online</span></h3><div class="l" id="a_s">Idle</div><pre id="a_j">—</pre></div>
-<div class="card"><h3>🌉 AgentLink — Broker <span class="dot">● Online</span></h3><div class="l" id="l_s">Idle</div><pre id="l_j">—</pre><div id="chk" class="l"></div></div>
-<div class="card"><h3>🔬 Agent B — Analyst <span class="dot">● Online</span></h3><div class="l" id="b_s">Idle</div><pre id="b_j">—</pre></div></div>
-<div class="card"><h3>🔊 Audio signal <span class="l" id="fnow"></span></h3><canvas id="cv" width="1000" height="110"></canvas><div class="l" id="sig" style="margin-top:6px">No signal yet.</div><pre id="hex"></pre></div>
-<div class="g3"><div class="card"><h3>Semantic compression <span class="l">experimental metric</span></h3><div id="comp" class="l">—</div></div><div class="card"><h3>Final answer (human-readable)</h3><div id="ans">—</div><div class="l" id="ansd" style="margin-top:6px"></div></div><div class="card"><h3>Live log</h3><div id="lg" class="l">—</div></div></div></section>
+:root{
+  --bg:#080d19;--sidebar:#0b1220;--panel:#101a2b;--panel2:#131f33;
+  --line:#21314b;--text:#e8eefb;--muted:#8b9bb8;--blue:#668cff;
+  --cyan:#25d5e8;--green:#36d69a;--red:#ff707d;--amber:#f5bd55;
+  --shadow:0 16px 42px #00000030;--radius:16px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;flex:0 0 248px;background:var(--sidebar);border-right:1px solid var(--line);padding:22px 15px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 10px 25px}
+.brand-mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#668cff,#25d5e8);font-size:20px;box-shadow:0 8px 24px #668cff35}
+.brand strong{display:block;font-size:16px;letter-spacing:.2px}
+.brand small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.nav-label{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:#9aaac2;padding:12px 12px 7px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:var(--muted);text-decoration:none;margin:2px 0;cursor:pointer;transition:.18s}
+.nav a:hover{background:#ffffff08;color:var(--text)}
+.nav a.active{background:linear-gradient(90deg,#668cff25,#25d5e810);color:#fff;border:1px solid #668cff35}
+.nav-icon{width:19px;text-align:center;font-size:16px}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--line);padding:15px 8px 0}
+.mode-row{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin-bottom:12px}
+.switch{position:relative;display:inline-block;width:38px;height:21px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#34425b;border-radius:20px;transition:.2s}
+.slider:before{content:"";position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.slider{background:var(--blue)}
+.switch input:checked+.slider:before{transform:translateX(17px)}
+.side-select{width:100%;margin:7px 0}
+.user-line{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin:10px 0}
+.main{flex:1;min-width:0;padding:26px clamp(16px,3vw,38px) 40px;max-width:1600px;margin:0 auto;width:100%}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:26px}
+.eyebrow{color:var(--cyan);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+h1{font-size:25px;margin:5px 0 0;letter-spacing:-.5px}
+.page-subtitle{color:var(--muted);font-size:12px;margin-top:6px}
+.top-actions{display:flex;align-items:center;gap:9px}
+.status-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:7px 11px;color:var(--muted);font-size:11px;background:#ffffff04}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #36d69a70}
+.page{display:none}.page.active{display:block}
+.page-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:18px}
+.page-heading h2{font-size:18px;margin:0}
+.page-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:linear-gradient(145deg,var(--panel),#0e1727);border:1px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);min-width:0}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.card-title{font-size:12px;font-weight:700;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:11px}
+.metric{font-size:27px;font-weight:750;letter-spacing:-.8px;margin:8px 0 4px}
+.metric-foot{font-size:12px;color:var(--muted)}
+.metric-icon{width:34px;height:34px;border-radius:10px;background:#668cff18;color:var(--blue);display:grid;place-items:center;font-size:16px}
+.metric-card{position:relative;overflow:hidden}
+.metric-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;right:-38px;bottom:-58px;background:#668cff0b}
+.btn{border:1px solid transparent;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:650;background:var(--blue);color:#fff;transition:.18s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.secondary{background:#ffffff06;border-color:var(--line);color:var(--text)}
+.btn.danger{background:#ff707d15;border-color:#ff707d35;color:#ff9ba4}
+.btn.small-btn{padding:6px 10px;font-size:11px}
+.input,textarea,select{background:#080f1d;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 11px;width:100%;outline:none;transition:border .15s}
+.input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+textarea{resize:vertical;line-height:1.55}
+label.field-label{display:block;color:var(--muted);font-size:11px;margin:0 0 6px}
+.field{margin-bottom:11px}
+.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.row>*{min-width:0}
+.grow{flex:1}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 8px;font-size:12px;font-weight:650;background:#668cff18;color:#a9beff;border:1px solid #668cff28}
+.badge.green{background:#36d69a12;color:#70e6b6;border-color:#36d69a30}
+.badge.red{background:#ff707d12;color:#ff9ba4;border-color:#ff707d30}
+.badge.amber{background:#f5bd5512;color:#ffd17d;border-color:#f5bd5530}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:520px;font-size:11px}
+th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+td{color:#d8e1f2}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#080f1d;border:1px solid #1b2a42;border-radius:9px;padding:11px;color:#8de9f2;font:11px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;max-height:220px;overflow:auto;margin:8px 0 0}
+.notice{border:1px solid #f5bd5540;background:#f5bd550b;border-radius:11px;padding:12px;color:#f2d49a;font-size:11px;line-height:1.55}
+.error-text{color:var(--red);font-size:11px}
+.success-text{color:var(--green);font-size:11px}
+.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px}
+.progress{height:6px;background:#25334b;border-radius:99px;overflow:hidden}
+.progress>span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:99px}
+.chart{height:150px;width:100%;display:block}
+.activity{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff0a}
+.activity:last-child{border:0}
+.activity-mark{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:4px;flex:0 0 auto}
+.activity-main{min-width:0;flex:1}
+.activity-main strong{font-size:11px;font-weight:600}
+.activity-main div{font-size:12px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.pipeline{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.pipeline-step{padding:7px 10px;border-radius:8px;border:1px solid var(--line);font-size:12px;color:var(--muted);background:#ffffff03}
+.pipeline-step.done{color:var(--green);border-color:#36d69a55;background:#36d69a0b}
+.pipeline-step.current{color:var(--cyan);border-color:#25d5e866;background:#25d5e80d;box-shadow:0 0 15px #25d5e815}
+.wave-canvas{width:100%;height:115px;display:block;background:#080f1d;border-radius:10px;border:1px solid var(--line)}
+.agent-card{position:relative}
+.agent-card h3{font-size:13px;margin:0 0 6px}
+.agent-card p{font-size:11px;color:var(--muted);min-height:30px;line-height:1.45}
+.agent-meta{font-size:12px;color:var(--muted);line-height:1.8}
+.auth-overlay{display:none;position:fixed;inset:0;background:#050914ed;z-index:20;align-items:center;justify-content:center;padding:18px}
+.auth-card{width:min(390px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:25px;box-shadow:var(--shadow)}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.mobile-menu{display:none}
+.toast{position:fixed;right:20px;bottom:20px;z-index:30;background:#17243a;border:1px solid var(--line);border-radius:10px;padding:11px 15px;font-size:12px;box-shadow:var(--shadow);display:none;max-width:min(420px,calc(100vw - 40px))}
+#auth{display:flex}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .app{display:block}.sidebar{width:100%;height:auto;position:relative;padding:12px 14px;border-right:0;border-bottom:1px solid var(--line)}
+ .brand{padding:0 5px 10px}.sidebar .nav-label,.sidebar-bottom{display:none}
+ .nav{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}.nav a{white-space:nowrap;padding:9px 10px;font-size:11px;margin:0}.nav-icon{display:none}
+ .main{padding:19px 14px 30px}.topbar{margin-bottom:20px}.top-actions .status-pill{display:none}
+ .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}
+}
+:root{--bg:#080f1e;--sidebar:#0b1423;--panel:#111d30;--panel2:#14233a;--line:rgba(156,184,224,.13);--text:#edf4ff;--muted:#b4c0d2;--blue:#7898ff;--cyan:#56ddd4;--green:#62dda3;--red:#ff8190;--amber:#ffc46c;--shadow:0 20px 55px rgba(0,0,0,.28);--radius:16px}
+body{background:radial-gradient(ellipse at 62% -18%,rgba(65,121,182,.16),transparent 43%),var(--bg)}
+.sidebar{background:rgba(10,18,33,.96);border-right-color:var(--line);backdrop-filter:blur(16px)}
+.brand-mark{background:linear-gradient(135deg,#58dfd4,#7597ff);box-shadow:0 8px 24px #58dfd435}
+.nav a{border:1px solid transparent}.nav a.active{background:linear-gradient(100deg,rgba(86,221,212,.14),rgba(120,152,255,.09));color:#f2fbff;border-color:#56ddd42c;box-shadow:inset 2px 0 var(--cyan)}
+.card{background:linear-gradient(145deg,rgba(18,30,49,.98),rgba(13,22,38,.98));border-color:var(--line);box-shadow:0 14px 38px rgba(0,0,0,.18)}
+.btn{background:linear-gradient(110deg,#58ddd4,#7898ff);color:#071624;box-shadow:0 7px 18px #56ddd422}.btn.secondary{background:#ffffff07;border-color:var(--line);color:var(--text);box-shadow:none}.btn.danger{background:#ff707d15;border-color:#ff707d35;color:#ff9ba4}.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.status-pill{background:#111d30;border-color:var(--line)}
+.page-heading h2{font-size:19px;letter-spacing:-.25px}.page-heading p{line-height:1.6}
+.overview-hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,43%);align-items:center;gap:18px;min-height:205px;padding:25px 29px;margin-bottom:15px;border:1px solid rgba(112,158,220,.22);border-radius:20px;background:linear-gradient(112deg,#11213a 0%,#122941 56%,#12383e 100%);box-shadow:0 20px 50px rgba(0,0,0,.22)}
+.overview-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 79% 48%,rgba(75,224,210,.15),transparent 31%),linear-gradient(90deg,transparent,rgba(104,131,242,.05))}
+.overview-hero-copy{max-width:550px}.overview-hero-tag{display:inline-flex;align-items:center;gap:8px;color:#a5f1e8;background:#4bdfd40f;border:1px solid #63d9cf38;border-radius:99px;padding:5px 10px;font-size:12px;font-weight:700;letter-spacing:1px}.overview-hero-tag i{width:6px;height:6px;border-radius:50%;background:#65e4d6;box-shadow:0 0 9px #65e4d6}.overview-hero h2{font-size:23px;line-height:1.4;margin:12px 0 7px;letter-spacing:-.45px}.overview-hero p{max-width:440px;color:#a8bad1;font-size:11px;line-height:1.8;margin:0}.overview-hero-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}.overview-hero-meta span{border:1px solid #a4bad024;background:#ffffff07;border-radius:8px;padding:6px 9px;color:#cfdded;font-size:12px}.overview-hero-meta b{color:var(--cyan);font-weight:600}.overview-visual{width:100%;height:160px;justify-self:center}.overview-visual svg{display:block;width:100%;height:100%;overflow:visible}.overview-visual text{font-family:Inter,ui-sans-serif,system-ui,"Segoe UI",sans-serif}
+@media(max-width:760px){.overview-hero{grid-template-columns:1fr;gap:3px;padding:19px;min-height:0}.overview-visual{grid-row:1;height:120px;max-width:390px}.overview-hero h2{font-size:20px}.overview-hero p{font-size:11px}}
 
-<section id="registry"><h2>Agent Registry</h2><div class="row" style="margin-bottom:12px"><input id="rq" placeholder="Search name, company, capability…" style="flex:2" oninput="regLoad()"><select id="rs" style="flex:1" onchange="regLoad()"><option value="">All status</option><option>Online</option><option>Offline</option></select></div><div id="rl" class="g3"></div>
-<div class="card"><h3>Register agent</h3><div class="g3"><input id="n" placeholder="Agent name"><input id="co" placeholder="Company"><input id="d" placeholder="Description"><input id="cap" placeholder="Capabilities (comma separated)"><input id="lg2" placeholder="Languages" value="English"><select id="st"><option>Online</option><option>Offline</option></select><input id="pr" placeholder="Protocol" value="AgentLink"><select id="se"><option>Verified</option><option>Unverified</option></select></div><button style="margin-top:8px" onclick="regAdd()">Register</button></div></section>
+.motion-pulse{opacity:.35;animation:signal-pulse var(--pulse-duration,2s) ease-in-out infinite}
+@keyframes signal-pulse{50%{opacity:1}}
+:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.nav a:focus-visible,.btn:focus-visible{border-radius:10px}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+ .motion-pulse{opacity:.7}
+}
+</style>
+</head>
+<body>
+<div class="auth-overlay" id="auth">
+  <div class="auth-card">
+    <div class="auth-brand"><div class="brand-mark">↔</div><div><strong>AgentLink</strong><div class="muted small">AI Agent Communication Bridge</div></div></div>
+    <h2 style="font-size:19px;margin:0 0 6px">Welcome back</h2>
+    <p class="muted small" style="margin:0 0 18px">Sign in to access your workspace or create a new account.</p>
+    <div class="field"><label class="field-label">Email address</label><input class="input" id="em" type="email" autocomplete="username" placeholder="you@example.com"></div>
+    <div class="field"><label class="field-label">Password</label><input class="input" id="pw" type="password" autocomplete="current-password" placeholder="6 characters to sign in, 12 to register"></div>
+    <div class="row"><button class="btn grow" onclick="auth('login')">Sign in</button><button class="btn secondary grow" onclick="auth('register')">Create account</button></div>
+    <div id="aerr" class="error-text" style="margin-top:12px"></div>
+    <p class="muted" style="font-size:12px;line-height:1.5;margin:14px 0 0">Prototype notice: use demo data only. Do not enter sensitive personal information.</p>
+  </div>
+</div>
 
-<section id="gateway"><h2>Agent Gateway</h2><div class="card"><div class="row" style="justify-content:center;font-size:15px"><b>🧭 Agent A</b> → <b style="color:var(--cy)">🌉 AgentLink Gateway</b> → <b>🔬 Agent B</b></div><div class="l" style="text-align:center;margin-top:6px">One integration point instead of a custom link per agent pair.</div></div>
-<div class="g3"><div class="card"><h3>Last routing & validation</h3><div id="gw" class="l">Send a message from the Console first.</div></div><div class="card"><h3>🔐 Agent permissions <span class="l">Prototype Security Layer</span></h3><div class="l">AGENT_A: SEND_REQUEST, REQUEST_ANALYSIS<br>AGENT_B: RECEIVE_REQUEST, SEND_RESPONSE</div>
-<div class="row" style="margin-top:8px"><button class="g" onclick="perm('AGENT_A','REQUEST_ANALYSIS')">A → REQUEST_ANALYSIS</button><button class="g" onclick="perm('AGENT_A','SEND_RESPONSE')">A → SEND_RESPONSE</button></div><div id="pm" style="margin-top:8px"></div></div></div></section>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">↔</div><div><strong>AgentLink</strong><small>AI COMMUNICATION BRIDGE</small></div></div>
+  <div class="nav-label">Workspace</div>
+  <nav class="nav">
+    <a href="#overview" data-page="overview" class="active" aria-current="page"><span class="nav-icon">▦</span>Overview</a>
+    <a href="#console" data-page="console"><span class="nav-icon">⌘</span>Console</a>
+    <a href="#registry" data-page="registry"><span class="nav-icon">◇</span>Agent Registry</a>
+    <a href="#gateway" data-page="gateway"><span class="nav-icon">⇄</span>Gateway</a>
+    <a href="#data" data-page="data"><span class="nav-icon">▤</span>My Data</a>
+    <a href="#tasks" data-page="tasks"><span class="nav-icon">◷</span>Tasks & Telegram</a>
+    <a href="#metrics" data-page="metrics"><span class="nav-icon">▥</span>Analytics & Logs</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="mode-row"><span>Live AI mode</span><label class="switch"><input type="checkbox" id="live"><span class="slider"></span></label></div>
+    <div class="field"><label class="field-label">Response language</label><select id="lang" class="side-select"><option value="en">English</option><option value="ar">العربية</option></select></div>
+    <div class="field"><label class="field-label">Privacy</label><label class="small muted"><input type="checkbox" id="mask" checked style="width:auto;vertical-align:middle"> Mask emails and phone numbers</label></div>
+    <div class="field"><label class="field-label">Audio</label><label class="small muted"><input type="checkbox" id="mute" style="width:auto;vertical-align:middle"> Mute playback</label><br><label class="small muted"><input type="checkbox" id="tts" style="width:auto;vertical-align:middle"> Read answer aloud</label><br><label class="small muted"><input type="checkbox" id="autosend" style="width:auto;vertical-align:middle"> Auto-send after speaking</label></div>
+    <div id="health" class="small muted">Checking backend…</div>
+    <div id="who" class="user-line">Not signed in</div>
+    <button class="btn secondary small-btn" style="width:100%" onclick="logout()">Sign out</button>
+  </div>
+</aside>
 
-<section id="data"><h2>My Data</h2><div class="card"><b>⚠ Prototype notice</b><div class="l">Upload only demo or anonymised data. Do NOT upload real patient, customer or financial records: this prototype is not certified for sensitive data, and in Live AI mode relevant excerpts are sent to the AI provider. Your documents are visible only to your own account.</div></div>
-<div class="card"><h3>Add a document</h3><input id="dn" placeholder="Name (e.g. complaints.csv)" style="margin-bottom:8px"><textarea id="dc" rows="6" placeholder="Paste text or CSV here, or choose a file below"></textarea><div class="row" style="margin-top:8px"><input type="file" accept=".txt,.csv,.md,.json" onchange="docFile(this)" style="width:auto"><button onclick="docAdd()">Save document</button><span id="derr" class="l bad"></span></div><div class="l" style="margin-top:6px">Max 200 KB per document and 50 documents. Text files only (.txt .csv .md .json).</div></div>
-<div class="card" style="overflow-x:auto"><table><tr><th>Name</th><th>Size</th><th>Added</th><th></th></tr><tbody id="dl"></tbody></table></div><div class="l">Agent B answers from these documents: ask in the Console, from Telegram, or through a scheduled task.</div></section>
+<main class="main">
+<header class="topbar">
+  <div><div class="eyebrow">AI AGENT OPERATIONS</div><h1 id="top-title">Workspace overview</h1><div class="page-subtitle" id="top-subtitle">Monitor your agents, communication pipeline and system activity.</div></div>
+  <div class="top-actions"><span class="status-pill"><span class="status-dot"></span><span id="backend-status">Connecting</span></span><button class="btn secondary" onclick="refreshCurrent()">↻ Refresh</button></div>
+</header>
 
-<section id="tasks"><h2>Autonomous Tasks & Telegram</h2><div class="card"><h3>Assign a task to the agents</h3><input id="tt" placeholder="Title (e.g. Weekly complaints report)" style="margin-bottom:8px"><textarea id="tp" rows="2" placeholder="What should the agents do? e.g. Summarize the most common delivery complaints in my data"></textarea><div class="row" style="margin-top:8px"><select id="te" style="width:auto"><option value="0">Run once now</option><option value="5">Every 5 min</option><option value="15">Every 15 min</option><option value="60">Every hour</option><option value="1440">Every day</option></select><button onclick="tkAdd()">Create task</button><span id="terr" class="l bad"></span></div><div class="l" style="margin-top:6px">Tasks run on the server while it is running. Each run counts toward your daily Live AI limit.</div></div>
-<div class="card"><h3>📨 Telegram</h3><div id="tg" class="l">…</div></div><div id="tl"></div></section>
+<section class="page active" id="overview">
+  <div class="page-heading"><button class="btn" onclick="go('console')">＋ New communication</button></div>
+  <div class="overview-hero">
+    <div class="overview-hero-copy">
+      <span class="overview-hero-tag"><i></i> AGENTLINK COMMUNICATION BRIDGE</span>
+      <h2>One connected workspace for your agents</h2>
+      <p>See backend health, recorded communication runs, and the route each request takes through AgentLink.</p>
+      <div class="overview-hero-meta"><span>Data from AgentLink backend</span><span>AL/1 message protocol</span></div>
+    </div>
+    <div class="overview-visual" role="img" aria-label="Diagram showing agents connected through the AgentLink broker">
+      <svg viewBox="0 0 440 180" aria-hidden="true">
+        <defs><linearGradient id="overviewWire" x1="0" x2="1"><stop stop-color="#56ddd4" stop-opacity=".18"/><stop offset=".52" stop-color="#66ded6" stop-opacity=".86"/><stop offset="1" stop-color="#8299ff" stop-opacity=".34"/></linearGradient><radialGradient id="overviewGlow"><stop stop-color="#70f1db" stop-opacity=".28"/><stop offset="1" stop-color="#70f1db" stop-opacity="0"/></radialGradient></defs>
+        <circle cx="220" cy="88" r="78" fill="url(#overviewGlow)"/><circle cx="220" cy="88" r="58" fill="none" stroke="#77dcd0" stroke-opacity=".09"/><circle cx="220" cy="88" r="42" fill="none" stroke="#77dcd0" stroke-opacity=".13" stroke-dasharray="3 7"/>
+        <path d="M93 48 C145 48 167 70 194 83 M93 130 C145 130 167 106 194 94 M246 88 C284 88 296 51 337 51 M246 91 C284 92 296 128 337 128" fill="none" stroke="url(#overviewWire)" stroke-width="1.5"/>
+        <circle cx="220" cy="88" r="25" fill="#142b42" stroke="#60ded2" stroke-opacity=".72"/><circle cx="220" cy="88" r="18" fill="#54dacf" fill-opacity=".13"/><path d="M213 84h14M213 92h14M217 80v16M223 80v16" stroke="#75e8df" stroke-width="1.4" stroke-linecap="round"/><text x="220" y="126" text-anchor="middle" fill="#d8f8f2" font-size="10">AGENTLINK BROKER</text>
+        <g><rect x="18" y="31" width="112" height="37" rx="11" fill="#14243a" stroke="#66dbd5" stroke-opacity=".3"/><circle cx="38" cy="49" r="9" fill="#50d9ca" fill-opacity=".16"/><path d="M34 49h8m-4-4v8" stroke="#6de5da" stroke-width="1.2"/><text x="54" y="44" fill="#e2edfb" font-size="11">Agent A</text><text x="54" y="60" fill="#a8bad1" font-size="9.5">Request planner</text></g>
+        <g><rect x="18" y="112" width="112" height="37" rx="11" fill="#14243a" stroke="#66dbd5" stroke-opacity=".3"/><circle cx="38" cy="130" r="9" fill="#50d9ca" fill-opacity=".16"/><path d="M34 130h8m-4-4v8" stroke="#6de5da" stroke-width="1.2"/><text x="54" y="125" fill="#e2edfb" font-size="11">Agent B</text><text x="54" y="141" fill="#a8bad1" font-size="9.5">Task analyst</text></g>
+        <g><rect x="310" y="33" width="112" height="37" rx="11" fill="#14243a" stroke="#809aff" stroke-opacity=".35"/><circle cx="330" cy="51" r="9" fill="#809aff" fill-opacity=".17"/><path d="M325 51h10m-5-5v10" stroke="#9bb0ff" stroke-width="1.2"/><text x="346" y="46" fill="#e2edfb" font-size="11">Registry</text><text x="346" y="62" fill="#a8bad1" font-size="9.5">Agent directory</text></g>
+        <g><rect x="310" y="110" width="112" height="37" rx="11" fill="#14243a" stroke="#809aff" stroke-opacity=".35"/><circle cx="330" cy="128" r="9" fill="#809aff" fill-opacity=".17"/><path d="M325 128h10m-5-5v10" stroke="#9bb0ff" stroke-width="1.2"/><text x="346" y="123" fill="#e2edfb" font-size="11">Audio Link</text><text x="346" y="139" fill="#a8bad1" font-size="9.5">Signal layer</text></g>
+        <circle class="motion-pulse" style="--pulse-duration:2s" cx="146" cy="58" r="2.5" fill="#73e5dc"/><circle class="motion-pulse" style="--pulse-duration:2.6s" cx="291" cy="69" r="2.5" fill="#8fa3ff"/><circle class="motion-pulse" style="--pulse-duration:2.3s" cx="291" cy="111" r="2.5" fill="#63ddd3"/>
+      </svg>
+    </div>
+  </div>
+  <div class="grid grid-4" id="overview-kpis">
+    <div class="card metric-card"><div class="card-head"><span class="muted small">Total messages</span><span class="metric-icon">✉</span></div><div class="metric" id="ov-messages">—</div><div class="metric-foot">Recorded communication runs</div></div>
+    <div class="card metric-card"><div class="card-head"><span class="muted small">Successful runs</span><span class="metric-icon">✓</span></div><div class="metric" id="ov-success">—</div><div class="metric-foot">Completed end-to-end</div></div>
+    <div class="card metric-card"><div class="card-head"><span class="muted small">Average latency</span><span class="metric-icon">◷</span></div><div class="metric" id="ov-latency">—</div><div class="metric-foot">Includes model response time</div></div>
+    <div class="card metric-card"><div class="card-head"><span class="muted small">Decode accuracy</span><span class="metric-icon">⌁</span></div><div class="metric" id="ov-accuracy">—</div><div class="metric-foot">Audio frame verification rate</div></div>
+  </div>
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><div class="card-head"><h3 class="card-title">Communication activity</h3><span class="badge">Recent runs</span></div><canvas id="overview-chart" class="chart" width="700" height="180"></canvas><div class="small muted" id="chart-note">Processing time per recent message.</div></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">System status</h3><span class="badge green">Workspace</span></div>
+      <div class="activity"><span class="activity-mark"></span><div class="activity-main"><strong>Backend API</strong><div id="ov-api">Checking service health…</div></div><span class="badge" id="ov-api-badge">Checking</span></div>
+      <div class="activity"><span class="activity-mark"></span><div class="activity-main"><strong>Language model</strong><div id="ov-llm">Checking provider configuration…</div></div><span class="badge" id="ov-llm-badge">Checking</span></div>
+      <div class="activity"><span class="activity-mark"></span><div class="activity-main"><strong>Telegram integration</strong><div id="ov-tg">Loading Telegram status…</div></div><span class="badge amber" id="ov-tg-badge">Checking</span></div>
+      <div class="divider"></div><div class="row"><span class="muted small">Current mode</span><strong id="ov-mode" class="grow" style="text-align:right">Demo</strong></div>
+    </div>
+  </div>
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><div class="card-head"><h3 class="card-title">Recent activity</h3><button class="btn secondary small-btn" onclick="go('metrics')">View logs</button></div><div id="overview-logs" class="small muted">Loading activity…</div></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">Quick actions</h3></div><div class="grid grid-2">
+      <button class="btn secondary" onclick="go('console')">Start a conversation</button><button class="btn secondary" onclick="go('registry')">Manage agents</button><button class="btn secondary" onclick="go('data')">Add a document</button><button class="btn secondary" onclick="go('tasks')">Create a task</button>
+    </div><div class="divider"></div><div class="notice">AgentLink is currently a prototype. Metrics reflect events recorded by this application and should not be interpreted as independent performance certification.</div></div>
+  </div>
+</section>
 
-<section id="metrics"><h2>Metrics & Communication Log</h2><div class="g3" id="mk"></div><div class="card"><div class="l">Total processing time per message (ms)</div><div class="bars" id="mb"></div></div><div class="card" style="overflow-x:auto"><table id="lt"></table></div><div class="l">All values are computed from real application events stored in SQLite.</div></section>
+<section class="page" id="console">
+  <div class="page-heading"><span class="badge green">Pipeline ready</span></div>
+  <div class="card">
+    <div class="field"><label class="field-label">Your request</label><textarea id="msg" rows="3">Analyze customer complaints and tell me the three most common problems.</textarea></div>
+    <div class="row"><button class="btn" id="send">Send to Agent A</button><button class="btn secondary" id="mic" onclick="mic()">🎙 Speak</button><button class="btn secondary" onclick="replay(0)">Play request signal</button><button class="btn secondary" onclick="replay(1)">Play response signal</button><span id="err" class="error-text"></span></div>
+  </div>
+  <div class="pipeline" id="pipeline"></div>
+  <div class="grid grid-3">
+    <div class="card"><div class="card-head"><h3 class="card-title">① Agent A · Planner</h3><span class="badge green">Online</span></div><div class="small muted" id="a_s">Idle — waiting for request</div><pre id="a_j">No structured request yet.</pre></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">② AgentLink · Broker</h3><span class="badge green">Online</span></div><div class="small muted" id="l_s">Idle — waiting for Agent A</div><pre id="l_j">No protocol frame yet.</pre><div id="chk" class="small muted" style="margin-top:8px"></div></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">③ Agent B · Analyst</h3><span class="badge green">Online</span></div><div class="small muted" id="b_s">Idle — waiting for request</div><pre id="b_j">No decoded request yet.</pre></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Audio transmission monitor</h3><span class="small muted" id="fnow">No active signal</span></div><canvas id="cv" class="wave-canvas" width="1000" height="115"></canvas><div class="small muted" id="sig" style="margin-top:9px">Audio waveform will appear when a signal is encoded.</div><pre id="hex">Hex payload will appear here.</pre></div>
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><div class="card-head"><h3 class="card-title">Semantic compression</h3><span class="badge amber">Experimental</span></div><div id="comp" class="small muted">No measurement yet.</div></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">Human-readable response</h3><span class="badge green">Agent B output</span></div><div id="ans" style="font-size:13px;line-height:1.7">Your response will appear here.</div><div id="ansd" class="small muted" style="margin-top:9px"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Agent C verification</h3><span class="badge">Third model</span></div><div id="verify" class="small muted">A separate model reviews Agent B's answer whenever Live AI mode is on.</div><div id="modelrow" class="small muted" style="margin-top:9px"></div></div>
+</section>
+
+<section class="page" id="registry">
+  
+  <div class="row" style="margin-bottom:14px"><input class="input grow" id="rq" placeholder="Search by name, company or capability…" oninput="regLoad()"><select class="input" id="rs" style="max-width:150px" onchange="regLoad()"><option value="">All statuses</option><option>Online</option><option>Offline</option></select></div>
+  <div class="grid grid-3" id="rl"><div class="empty">Loading agents…</div></div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><h3 class="card-title">Register a new agent</h3><span class="badge">Workspace registry</span></div>
+    <div class="grid grid-3">
+      <div class="field"><label class="field-label">Agent name</label><input class="input" id="n" placeholder="e.g. Research Agent"></div>
+      <div class="field"><label class="field-label">Company / Team</label><input class="input" id="co" placeholder="Organization"></div>
+      <div class="field"><label class="field-label">Description</label><input class="input" id="d" placeholder="What does this agent do?"></div>
+      <div class="field"><label class="field-label">Capabilities</label><input class="input" id="cap" placeholder="Research, Analysis"></div>
+      <div class="field"><label class="field-label">Languages</label><input class="input" id="lg2" value="English"></div>
+      <div class="field"><label class="field-label">Status</label><select class="input" id="st"><option>Online</option><option>Offline</option></select></div>
+      <div class="field"><label class="field-label">Protocol</label><input class="input" id="pr" value="AgentLink"></div>
+      <div class="field"><label class="field-label">Security status</label><select class="input" id="se"><option>Unverified</option><option>Verified</option></select></div>
+    </div><button class="btn" onclick="regAdd()">Register agent</button><span id="reg-error" class="error-text" style="margin-left:10px"></span>
+  </div>
+</section>
+
+<section class="page" id="gateway">
+  <div class="page-heading"><span class="badge green">AL/1 protocol</span></div>
+  <div class="card"><div class="row" style="justify-content:center;gap:14px;padding:18px 0;font-size:14px"><strong>🧭 Agent A</strong><span class="muted">→</span><strong style="color:var(--cyan)">🌉 AgentLink Gateway</strong><span class="muted">→</span><strong>🔬 Agent B</strong></div><div class="small muted" style="text-align:center">A single integration layer between agents using a structured message frame.</div></div>
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><div class="card-head"><h3 class="card-title">Last routing & validation</h3><span class="badge">Latest run</span></div><div id="gw" class="small muted">Send a message from the Console to inspect its route.</div></div>
+    <div class="card"><div class="card-head"><h3 class="card-title">Permission matrix</h3><span class="badge amber">Prototype security</span></div><div class="small muted" style="line-height:1.9">AGENT_A · SEND_REQUEST · REQUEST_ANALYSIS<br>AGENT_B · RECEIVE_REQUEST · SEND_RESPONSE</div><div class="divider"></div><div class="row"><button class="btn secondary small-btn" onclick="perm('AGENT_A','REQUEST_ANALYSIS')">Test A → Analysis</button><button class="btn secondary small-btn" onclick="perm('AGENT_A','SEND_RESPONSE')">Test A → Response</button></div><div id="pm" class="small" style="margin-top:10px"></div></div>
+  </div>
+</section>
+
+<section class="page" id="data">
+  <div class="notice" style="margin-bottom:14px"><strong>Prototype data notice.</strong> Upload demo or anonymised data only. In Live AI mode, relevant document excerpts may be sent to your configured AI provider. Do not upload sensitive customer, patient, financial or personal records.</div>
+  <div class="card"><div class="card-head"><h3 class="card-title">Add a document</h3><span class="badge">TXT · CSV · MD · JSON</span></div>
+    <div class="field"><label class="field-label">Document name</label><input class="input" id="dn" placeholder="e.g. complaints.csv"></div>
+    <div class="field"><label class="field-label">Document content</label><textarea id="dc" rows="6" placeholder="Paste text or CSV content here, or select a local text file below."></textarea></div>
+    <div class="row"><input type="file" id="doc-file" accept=".txt,.csv,.md,.json" style="max-width:280px;color:var(--muted);font-size:11px" onchange="docFile(this)"><button class="btn" onclick="docAdd()">Save document</button><span id="derr" class="error-text"></span></div>
+    <div class="small muted" style="margin-top:9px">Maximum 200 KB per document and 50 documents per account.</div>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Your documents</h3><button class="btn secondary small-btn" onclick="docLoad()">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Document</th><th>Size</th><th>Created</th><th>Action</th></tr></thead><tbody id="dl"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody></table></div></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Upload files for the agents</h3><span class="badge">PDF · DOCX · TXT · CSV · MD · JSON</span></div>
+    <div class="notice" id="drop" style="border-style:dashed;text-align:center;cursor:pointer;padding:22px">Drop files here, or <button class="btn secondary small-btn" onclick="$('#up-file').click()">choose files</button><input type="file" id="up-file" multiple accept=".pdf,.docx,.txt,.csv,.md,.json,.log" style="display:none" onchange="upAdd(this.files)"><div class="small" id="up-status" style="margin-top:9px">Files are converted to text on the server.</div></div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>File</th><th>Type</th><th>Size</th><th>Text found</th><th>Created</th><th>Actions</th></tr></thead><tbody id="fl"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody></table></div>
+    <div id="up-preview"></div>
+    <p class="small muted" style="margin-top:10px">Maximum 5 MB per file and 25 files per account. Scanned PDFs without a text layer are stored but cannot be cited.</p>
+  </div>
+</section>
+
+<section class="page" id="tasks">
+  
+  <div class="card"><div class="card-head"><h3 class="card-title">Create an agent task</h3><span class="badge">Background execution</span></div>
+    <div class="field"><label class="field-label">Task title</label><input class="input" id="tt" placeholder="e.g. Weekly complaints report"></div>
+    <div class="field"><label class="field-label">Instructions</label><textarea id="tp" rows="3" placeholder="Describe what Agent A and Agent B should do…"></textarea></div>
+    <div class="row"><select class="input" id="te" style="max-width:190px"><option value="0">Run once</option><option value="5">Every 5 minutes</option><option value="15">Every 15 minutes</option><option value="60">Every hour</option><option value="1440">Every day</option></select><button class="btn" onclick="tkAdd()">Create task</button><span id="terr" class="error-text"></span></div>
+    <p class="small muted" style="margin:10px 0 0">Tasks run only while your backend process is running. Each Live AI run uses your daily request allowance.</p>
+  </div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Telegram integration</h3><span class="badge">Optional channel</span></div><div id="tg" class="small muted">Loading Telegram status…</div></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Scheduled tasks</h3><button class="btn secondary small-btn" onclick="tkLoad()">Refresh</button></div><div id="tl"><div class="empty">Loading tasks…</div></div></div>
+</section>
+
+<section class="page" id="metrics">
+  <div class="page-heading"><button class="btn secondary" onclick="met()">↻ Reload metrics</button></div>
+  <div class="grid grid-4" id="mk"></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Recent processing times</h3><span class="small muted">Milliseconds</span></div><div class="bars" id="mb" style="display:flex;align-items:flex-end;gap:7px;height:105px"></div></div>
+  <div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Communication logs</h3><span class="badge">Latest 40 events</span></div><div class="table-wrap"><table id="lt"><thead><tr><th>Time</th><th>From → To</th><th>Event</th><th>Details</th></tr></thead><tbody></tbody></table></div></div>
+  <p class="small muted">Metrics are calculated from telemetry submitted by the frontend. They are only as reliable as the events and timings recorded by the application.</p>
+</section>
 </main>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms)),esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-let TOK='';try{TOK=localStorage.tok||''}catch(e){}
-async function api(u,b,m){const r=await fetch(u,{method:m||(b?'POST':'GET'),headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOK},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(r.status==401&&!u.includes('login')&&!u.includes('register')){showLogin();throw new Error('Please log in')}if(!r.ok)throw new Error(typeof j.detail=='string'?j.detail:r.statusText);return j}
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let TOK='';try{TOK=sessionStorage.getItem('agentlink_token')||''}catch(e){}
+let currentPage='overview',last=null,AC=null,raf=null,sigs=[],rec=null;
+const pageInfo={
+ overview:['Workspace overview','Monitor your agents, communication pipeline and system activity.'],
+ console:['Communication console','Send and inspect a structured agent-to-agent request.'],
+ registry:['Agent registry','Manage the agents registered in your workspace.'],
+ gateway:['Agent gateway','Central routing, message validation and permission checks.'],
+ data:['My data','Manage documents available to your own agents.'],
+ tasks:['Tasks & Telegram','Automate workflows and connect a Telegram bot.'],
+ metrics:['Analytics & logs','Inspect application telemetry and operational events.']
+};
+function toast(message){const el=$('#toast');el.textContent=message;el.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display='none',3200)}
 function showLogin(){$('#auth').style.display='flex'}
-async function auth(k){try{const j=await api('/api/'+k,{email:$('#em').value,password:$('#pw').value});TOK=j.token;try{localStorage.tok=TOK}catch(e){}$('#auth').style.display='none';boot()}catch(e){$('#aerr').textContent=e.message}}
-function logout(){TOK='';try{localStorage.tok=''}catch(e){}location.reload()}
-async function boot(){try{const u=await api('/api/me');$('#who').textContent=u.email+' · '+u.role;logs()}catch(e){}}
-//AUDIO
-const SR=22050,N=441,F0=800,DF=160,HDR=600,END=3600,FR=[...Array(16)].map((_,i)=>F0+i*DF);
-function enc(str){const t0=performance.now(),by=[...new TextEncoder().encode(str)];let ck=0;by.forEach(b=>ck=(ck+b)&255);by.push(ck);
- const seq=[-1,-1,-1,-1];by.forEach(b=>seq.push(b>>4,b&15));seq.push(-2,-2);const s=new Float32Array(seq.length*N);
- seq.forEach((v,k)=>{const f=v==-1?HDR:v==-2?END:FR[v];for(let i=0;i<N;i++)s[k*N+i]=0.5*Math.min(1,i/40,(N-i)/40)*Math.sin(2*Math.PI*f*i/SR)});
- return{s,ms:performance.now()-t0,dur:s.length/SR,bytes:by.length,hex:by.map(b=>b.toString(16).padStart(2,'0')).join('')}}
-function gz(s,o,f){const w=2*Math.cos(2*Math.PI*f/SR);let a=0,b=0;for(let i=0;i<N;i++){const c=s[o+i]+w*a-b;b=a;a=c}return a*a+b*b-w*a*b}
-function best(s,o){let bp=-1,bj=0;[HDR,...FR,END].forEach((f,j)=>{const p=gz(s,o,f);if(p>bp){bp=p;bj=j}});return bj}
-function dec(s){const t0=performance.now(),nb=[];for(let o=0;o+N<=s.length;o+=N){const j=best(s,o);if(j==0)continue;if(j==17)break;nb.push(j-1)}
- const by=[];for(let i=0;i+1<nb.length;i+=2)by.push(nb[i]*16+nb[i+1]);const ck=by.pop();let sm=0;by.forEach(b=>sm=(sm+b)&255);
- return{text:new TextDecoder().decode(new Uint8Array(by)),ok:sm===ck,ms:performance.now()-t0}}
-//AUDIO
-let AC,raf,sigs=[],CH=["USER","AGENT A","STRUCTURED MSG","BROKER","AUDIO ENCODER","🔊 SIGNAL","AUDIO DECODER","AGENT B","AI RESPONSE","AGENTLINK","🔊 SIGNAL","USER"];
-$('#pipe').innerHTML=CH.map(c=>`<span class="chip">${c}</span>`).join('');
-const hl=i=>document.querySelectorAll('.chip').forEach((c,k)=>{c.className='chip'+(k<i?' on':'')+(k==i?' cur':'')});
-function wave(s,p){const c=$('#cv'),x=c.getContext('2d'),W=c.width,H=c.height;x.clearRect(0,0,W,H);x.strokeStyle='#5b8cff';x.beginPath();const st=Math.floor(s.length/W);
- for(let i=0;i<W;i++){let mx=0;for(let j=0;j<st;j+=8)mx=Math.max(mx,Math.abs(s[i*st+j]));x.moveTo(i,H/2-mx*H/2);x.lineTo(i,H/2+mx*H/2)}x.stroke();if(p!=null){x.strokeStyle='#22d3ee';x.beginPath();x.moveTo(p*W,0);x.lineTo(p*W,H);x.stroke()}}
-function play(s){return new Promise(res=>{wave(s);if($('#mute').checked)return res();AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();
- const b=AC.createBuffer(1,s.length,SR);b.copyToChannel(s,0);const n=AC.createBufferSource();n.buffer=b;n.connect(AC.destination);const t0=AC.currentTime;n.onended=()=>{cancelAnimationFrame(raf);wave(s);$('#fnow').textContent='';res()};n.start();
- const tick=()=>{const p=Math.min(1,(AC.currentTime-t0)/(s.length/SR)),o=Math.min(Math.floor(p*s.length/N)*N,s.length-N),j=best(s,o);wave(s,p);$('#fnow').textContent=[HDR,...FR,END][j]+' Hz';raf=requestAnimationFrame(tick)};tick()})}
-async function leg(frame,label,i){hl(i);const e=enc(frame);hl(i+1);$('#sig').innerHTML=`<b>${label}</b> · duration ${e.dur.toFixed(2)} s · ${e.bytes} bytes · encode ${e.ms.toFixed(1)} ms · decoding…`;$('#hex').textContent=e.hex;sigs[label.startsWith('A')?0:1]=e.s;
- await play(e.s);hl(i+2);const d=dec(e.s);$('#sig').innerHTML=`<b>${label}</b> · duration ${e.dur.toFixed(2)} s · ${e.bytes} bytes · encode ${e.ms.toFixed(1)} ms · decode ${d.ms.toFixed(1)} ms · <span class="${d.ok&&d.text==frame?'ok':'bad'}">${d.ok&&d.text==frame?'✔ decoded, checksum OK':'✖ decoding failed'}</span>`;return{e,d,match:d.ok&&d.text==frame}}
-const replay=i=>sigs[i]?play(sigs[i]):alert('Run a communication first.');
-const parse=t=>Object.fromEntries(t.split('|').slice(1).map(p=>{const i=p.indexOf(':');return[p.slice(0,i),p.slice(i+1)]}));
-async function logs(){const l=await api('/api/logs?limit=8');$('#lg').innerHTML=l.map(x=>`<div>${x.ts} ${x.src}→${x.dst}: <b>${esc(x.event)}</b></div>`).join('')}
-let last=null;
-$('#send').onclick=async()=>{const msg=$('#msg').value.trim();if(!msg)return;$('#err').textContent='';$('#send').disabled=true;AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();
- const demo=!$('#live').checked,lang=$('#lang').value;let id='----',aM=0,bM=0,enc_t=0,dec_t=0,okc=0,ratio=0;
- ['a_j','l_j','b_j'].forEach(k=>$('#'+k).textContent='—');$('#ans').textContent='—';$('#ansd').textContent='';
- try{hl(1);$('#a_s').textContent='Interpreting request…';
-  const A=await api('/api/agent-a',{message:msg,lang,demo});id=A.id;aM=A.ms;ratio=A.compression.ratio;$('#a_s').textContent='Protocol generated ('+A.mode+')';$('#a_j').textContent=JSON.stringify(A.structured,null,1);
-  hl(2);await sleep(300);$('#l_s').textContent='Validated · message ID '+id;$('#l_j').textContent=A.frame;$('#chk').innerHTML=A.checks.map(c=>`<div class="${c[1]?'ok':'bad'}">${c[1]?'✔':'⚠'} ${c[0]}</div>`).join('');
-  const c=A.compression;$('#comp').innerHTML=`Original: <b>${c.orig_chars}</b> chars (~${c.tok_orig} tokens)<br>Structured: <b>${c.struct_chars}</b> chars (~${c.tok_struct} tokens)<br>Ratio: <b>${c.ratio}</b><pre>${esc(c.compact)}</pre><span class="l">Token estimate = chars/4. Experimental metric; short inputs may not shrink.</span>`;
-  logs();hl(3);await sleep(300);const L1=await leg(A.frame,'A → B request',4);enc_t+=L1.e.ms;dec_t+=L1.d.ms;okc+=L1.match;if(!L1.match)throw new Error('Request audio could not be decoded');
-  const P=parse(L1.d.text);$('#b_s').textContent='Decoded request received';$('#b_j').textContent=`MSG=${P.MSG}\nINTENT=${P.INTENT}\nACTION=${P.ACTION}\nPRIORITY=${P.PRIORITY}\nTASK=${P.TASK}`;logs();
-  hl(7);const B=await api('/api/agent-b',{id:P.MSG,intent:P.INTENT,action:P.ACTION,priority:P.PRIORITY,task:P.TASK,lang:P.LANG,demo,mask:$('#mask').checked});bM=B.ms;$('#b_s').textContent='Response generated';logs();
-  hl(8);await sleep(300);hl(9);await sleep(300);const L2=await leg(B.frame,'B → A response',10);enc_t+=L2.e.ms;dec_t+=L2.d.ms;okc+=L2.match;if(!L2.match)throw new Error('Response audio could not be decoded');
-  const R=parse(L2.d.text);$('#ans').textContent=B.answer;$('#ans').dir=lang=='ar'?'rtl':'ltr';$('#ansd').textContent='Decoded from audio: '+R.RESULT+' … (audio carries a ≤90-char summary; full text comes via the broker)'+(B.sources&&B.sources.length?' · Data sources: '+B.sources.join(', '):'');if($('#tts').checked)speak(B.answer,lang);hl(11);
-  await api('/api/telemetry',{id,ok:true,a_ms:aM,b_ms:bM,enc_ms:enc_t,dec_ms:dec_t,ratio,acc:okc/2});last={A,P,B};gw()}
- catch(e){$('#err').textContent=e.message;await api('/api/telemetry',{id,ok:false,a_ms:aM,b_ms:bM,enc_ms:enc_t,dec_ms:dec_t,ratio,acc:okc/2}).catch(()=>{})}
- logs();$('#send').disabled=false};
-function gw(){if(!last)return;const{A,P,B}=last;$('#gw').innerHTML=`<div>Route: <b>AGENT_A → AGENTLINK → AGENT_B</b> · message <b>${A.id}</b></div><div>Protocol conversion: JSON → AL/1 frame → audio → AL/1 frame</div>${A.checks.map(c=>`<div class="${c[1]?'ok':'bad'}">${c[1]?'✔':'⚠'} ${c[0]}</div>`).join('')}<pre>${esc(A.frame)}</pre><div class="l">Response ${B.ms} ms</div>`}
-async function perm(agent,action){try{await api('/api/permission',{agent,action});$('#pm').innerHTML=`<span class="ok">✔ ${agent} may ${action}</span>`}catch(e){$('#pm').innerHTML=`<span class="bad"><b>ACCESS DENIED</b><br>${esc(e.message.replace('ACCESS DENIED: ',''))}</span>`}}
-async function regLoad(){const l=await api(`/api/registry?q_=${encodeURIComponent($('#rq').value)}&status=${$('#rs').value}`);$('#rl').innerHTML=l.map(a=>`<div class="card"><h3>${esc(a.name)} <span class="${a.status=='Online'?'dot':'bad'}">● ${a.status}</span></h3><div class="l">${esc(a.company)} — ${esc(a.description)}</div><div style="margin:6px 0">${a.capabilities.split(',').map(c=>`<span class="tag">${esc(c.trim())}</span>`).join('')}</div><div class="l">Languages: ${esc(a.languages)}<br>Protocol: ${esc(a.protocol)} · Security: ${esc(a.security)}</div><button class="g" style="margin-top:6px" onclick="regDel(${a.id})">Remove</button></div>`).join('')||'<div class="l">No agents found.</div>'}
-async function regAdd(){if(!$('#n').value)return;await api('/api/registry',{name:$('#n').value,company:$('#co').value,description:$('#d').value,capabilities:$('#cap').value,languages:$('#lg2').value,status:$('#st').value,protocol:$('#pr').value,security:$('#se').value});$('#n').value='';regLoad()}
-async function regDel(i){await api('/api/registry/'+i,null,'DELETE');regLoad()}
-async function met(){const m=await api('/api/metrics'),K=[['Messages',m.messages],['Successful',m.ok],['Failed',m.failed],['Avg total (ms)',m.avg_total_ms],['Agent A (ms)',m.avg_agent_a_ms],['Agent B (ms)',m.avg_agent_b_ms],['Audio encode (ms)',m.avg_encode_ms],['Audio decode (ms)',m.avg_decode_ms],['Decode accuracy %',m.decode_accuracy_pct],['Compression ratio',m.avg_compression_ratio]];
- $('#mk').innerHTML=K.map(k=>`<div class="card"><div class="k">${k[1]}</div><div class="l">${k[0]}</div></div>`).join('');const mx=Math.max(1,...m.recent.map(r=>r.t));$('#mb').innerHTML=m.recent.reverse().map(r=>`<i title="${r.id}: ${r.t.toFixed(0)} ms" style="height:${r.t/mx*100}%"></i>`).join('');
- const l=await api('/api/logs?limit=40');$('#lt').innerHTML='<tr><th>Time</th><th>From → To</th><th>Event</th><th>Detail</th></tr>'+l.map(x=>`<tr><td>${x.ts}</td><td>${x.src}→${x.dst}</td><td class="${x.event.includes('DENIED')||x.event.includes('FAIL')||x.event.includes('error')?'bad':''}">${esc(x.event)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
-document.querySelectorAll('aside a').forEach(a=>a.onclick=()=>{document.querySelectorAll('section,aside a').forEach(e=>e.classList.remove('on'));$('#'+a.dataset.p).classList.add('on');a.classList.add('on');if(a.dataset.p=='registry')regLoad();if(a.dataset.p=='metrics')met();if(a.dataset.p=='gateway')gw();if(a.dataset.p=='data')docLoad();if(a.dataset.p=='tasks')tkLoad()});
-$('#live').onchange=()=>$('#modet').textContent=$('#live').checked?'Live AI':'Demo Mode';
-function speak(t,l){try{const u=new SpeechSynthesisUtterance(t);u.lang=l=='ar'?'ar-SA':'en-US';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
-let rec=null;function mic(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('#err').textContent='Voice input needs Chrome or Edge';return}
- if(rec){rec.stop();return}rec=new SR();rec.lang=$('#lang').value=='ar'?'ar-JO':'en-US';rec.interimResults=false;$('#mic').textContent='⏹ Listening…';
- rec.onresult=e=>{$('#msg').value=e.results[0][0].transcript;if($('#autosend').checked)$('#send').click()};rec.onerror=e=>{$('#err').textContent='Mic error: '+e.error};rec.onend=()=>{rec=null;$('#mic').textContent='🎤 Speak'};rec.start()}
-async function docLoad(){const l=await api('/api/docs');$('#dl').innerHTML=l.map(d=>`<tr><td>${esc(d.name)}</td><td>${(d.size/1024).toFixed(1)} KB</td><td>${d.created}</td><td><button class="g" onclick="docDel(${d.id})">Delete</button></td></tr>`).join('')||'<tr><td class="l" colspan="4">No documents yet.</td></tr>'}
-async function docAdd(){const n=$('#dn').value.trim()||'note',c=$('#dc').value;if(!c.trim())return;try{await api('/api/docs',{name:n,content:c});$('#dc').value='';$('#dn').value='';$('#derr').textContent='';docLoad()}catch(e){$('#derr').textContent=e.message}}
-function docFile(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('#dn').value=f.name;$('#dc').value=r.result};r.readAsText(f)}
-async function docDel(i){await api('/api/docs/'+i,null,'DELETE');docLoad()}
-async function tkLoad(){const l=await api('/api/tasks');$('#tl').innerHTML=l.map(t=>`<div class="card"><h3>${esc(t.title)} <span class="l">${t.every_min?'every '+t.every_min+' min':'one-time'} · ${t.enabled?'active':'done'}</span></h3><div class="l">${esc(t.prompt)}</div>${t.last_result?`<pre>${esc(t.last_result)}</pre><div class="l">Last run ${t.last_run}</div>`:'<div class="l">Not run yet.</div>'}<div class="row" style="margin-top:6px"><button class="g" onclick="tkRun(${t.id})">Run now</button><button class="g" onclick="tkDel(${t.id})">Delete</button></div></div>`).join('')||'<div class="l">No tasks yet.</div>';tgLoad()}
-async function tkAdd(){try{await api('/api/tasks',{title:$('#tt').value||'Task',prompt:$('#tp').value,every_min:+$('#te').value});$('#tp').value='';$('#terr').textContent='';tkLoad();setTimeout(tkLoad,5000)}catch(e){$('#terr').textContent=e.message}}
-async function tkRun(i){await api('/api/tasks/'+i+'/run',{});setTimeout(tkLoad,4000)}
-async function tkDel(i){await api('/api/tasks/'+i,null,'DELETE');tkLoad()}
-async function tgLoad(){const s=await api('/api/telegram');$('#tg').innerHTML=!s.enabled?'Telegram is off. Create a bot with @BotFather, put <b>TELEGRAM_BOT_TOKEN=...</b> in the .env file, then restart the server.':`Bot: <b>@${esc(s.username||'?')}</b> · ${s.linked?'<span class="ok">✔ your chat is linked</span>':'not linked yet'}<div class="row" style="margin-top:8px"><button onclick="tgCode()">Create link code</button>${s.linked?'<button class="g" onclick="tgUnlink()">Unlink</button>':''}</div><div id="tgc" style="margin-top:8px"></div>`}
-async function tgCode(){try{const c=await api('/api/telegram/code',{});$('#tgc').innerHTML=`Open Telegram, find <b>@${esc(c.username||'your bot')}</b> and send:<pre>/link ${c.code}</pre><span class="l">Valid for 10 minutes.</span>`}catch(e){$('#tgc').textContent=e.message}}
-async function tgUnlink(){await api('/api/telegram/link',null,'DELETE');tgLoad()}
-api('/api/health').then(h=>{$('#hs').textContent=h.llm_configured?'LLM key detected ('+h.provider+')':'No LLM key — Demo Mode';if(h.llm_configured){$('#live').checked=true;$('#live').onchange()}});boot();
-</script></body></html>
+function hideLogin(){$('#auth').style.display='none'}
+async function api(url,body=null,method=null){
+ const options={method:method||(body!==null?'POST':'GET'),headers:{'Authorization':'Bearer '+TOK}};
+ if(body!==null){options.headers['Content-Type']='application/json';options.body=JSON.stringify(body)}
+ const response=await fetch(url,options);
+ const data=await response.json().catch(()=>({}));
+ if(response.status===401&&!url.includes('/api/login')&&!url.includes('/api/register')){showLogin();throw new Error('Your session has expired. Please sign in again.')}
+ if(!response.ok){
+  let message;
+  if(typeof data.detail==='string')message=data.detail;
+  else if(Array.isArray(data.detail))message=data.detail.map(e=>String(e.msg||e.message||'')).filter(Boolean).join(' \u00b7 ')||response.statusText;
+  else message=data.detail?JSON.stringify(data.detail):(response.statusText||'Request failed');
+  throw new Error(message||'Request failed');
+ }
+ return data;
+}
+async function auth(kind){
+ $('#aerr').textContent='';
+ try{const result=await api('/api/'+kind,{email:$('#em').value.trim(),password:$('#pw').value});TOK=result.token;try{sessionStorage.setItem('agentlink_token',TOK)}catch(e){}hideLogin();await boot();toast('Signed in successfully')}
+ catch(e){$('#aerr').textContent=e.message}
+}
+async function logout(){
+ try{if(TOK)await api('/api/logout',{},'POST')}catch(e){}
+ TOK='';try{sessionStorage.removeItem('agentlink_token')}catch(e){}location.reload()
+}
+async function boot(){
+ if(!TOK){showLogin();return}
+ try{const user=await api('/api/me');$('#who').textContent=user.email+' · '+user.role;hideLogin();await healthCheck();await loadOverview()}
+ catch(e){showLogin()}
+}
+function go(name){
+ if(!pageInfo[name])return;currentPage=name;
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===name));
+ document.querySelectorAll('.nav a').forEach(a=>{const active=a.dataset.page===name;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+ $('#top-title').textContent=pageInfo[name][0];$('#top-subtitle').textContent=pageInfo[name][1];
+ refreshCurrent();
+}
+document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>go(a.dataset.page)));
+async function refreshCurrent(){
+ if(!TOK)return;
+ try{
+  if(currentPage==='overview')await loadOverview();
+  if(currentPage==='registry')await regLoad();
+  if(currentPage==='gateway')gw();
+  if(currentPage==='data'){await docLoad();await upLoad()}
+  if(currentPage==='tasks')await tkLoad();
+  if(currentPage==='metrics')await met();
+ }catch(e){toast(e.message)}
+}
+async function healthCheck(){
+ try{const h=await api('/api/health');$('#health').textContent=h.llm_configured?'● AI provider configured ('+h.provider+')':'● No AI key configured — Demo mode';$('#health').style.color=h.llm_configured?'var(--green)':'var(--amber)';$('#backend-status').textContent='API connected';$('#ov-api').textContent='API health endpoint responding';$('#ov-api-badge').textContent='Online';$('#ov-api-badge').className='badge green';$('#ov-llm').textContent=h.llm_configured?'Provider: '+h.provider:'No provider key detected; Demo mode is available';$('#ov-llm-badge').textContent=h.llm_configured?'Configured':'Demo';$('#ov-llm-badge').className='badge '+(h.llm_configured?'green':'amber');updateMode()}
+ catch(e){$('#health').textContent='● Backend unavailable';$('#backend-status').textContent='API unavailable';$('#ov-api').textContent=e.message;$('#ov-api-badge').textContent='Offline';$('#ov-api-badge').className='badge red'}
+}
+function updateMode(){$('#ov-mode').textContent=$('#live').checked?'Live AI':'Demo Mode'}
+$('#live').addEventListener('change',updateMode);
+async function loadOverview(){
+ const m=await api('/api/metrics');
+ $('#ov-messages').textContent=m.messages??0;$('#ov-success').textContent=m.ok??0;$('#ov-latency').textContent=(m.avg_total_ms??0).toFixed(1)+' ms';$('#ov-accuracy').textContent=(m.decode_accuracy_pct??0).toFixed(1)+'%';
+ drawOverviewChart(m.recent||[]);
+ await tgOverviewLoad();
+ const logs=await api('/api/logs?limit=6');
+ $('#overview-logs').innerHTML=logs.length?logs.map(x=>`<div class="activity"><span class="activity-mark"></span><div class="activity-main"><strong>${esc(x.event)}</strong><div>${esc(x.ts)} · ${esc(x.src)} → ${esc(x.dst)} · ${esc(x.detail)}</div></div></div>`).join(''):'<div class="empty">No activity recorded yet.</div>';
+}
+function drawOverviewChart(rows){
+ const c=$('#overview-chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ ctx.strokeStyle='#263650';ctx.lineWidth=1;for(let i=1;i<=3;i++){let y=i*h/4;ctx.beginPath();ctx.moveTo(28,y);ctx.lineTo(w-10,y);ctx.stroke()}
+ const vals=rows.slice().reverse().map(r=>Number(r.t)||0);if(!vals.length){ctx.fillStyle='#8b9bb8';ctx.font='13px sans-serif';ctx.fillText('No telemetry available yet',28,h/2);return}
+ const max=Math.max(1,...vals),slot=(w-48)/Math.max(vals.length,1);
+ vals.forEach((v,i)=>{const bh=Math.max(3,(v/max)*(h-35));const x=32+i*slot;const y=h-18-bh;const grad=ctx.createLinearGradient(0,y,0,h);grad.addColorStop(0,'#25d5e8');grad.addColorStop(1,'#668cff');ctx.fillStyle=grad;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,Math.max(8,slot-9),bh,4);else ctx.rect(x,y,Math.max(8,slot-9),bh);ctx.fill()});
+}
+function pipelineSet(index){document.querySelectorAll('.pipeline-step').forEach((el,i)=>{el.classList.toggle('done',i<index);el.classList.toggle('current',i===index)})}
+const PIPE=['User request','Agent A','Structured frame','Broker validation','Audio encode','Audio signal','Audio decode','Agent B','AI response','Response frame','Return signal','User'];
+$('#pipeline').innerHTML=PIPE.map((x,i)=>`<span class="pipeline-step" data-step="${i}">${String(i+1).padStart(2,'0')} · ${x}</span>`).join('');
+function hl(i){pipelineSet(i)}
+// Audio transport demo: frames are synthesized and decoded in-browser; this is not microphone-to-microphone transmission.
+const SR=22050,N=441,F0=800,DF=160,HDR=600,END=3600,FR=Array.from({length:16},(_,i)=>F0+i*DF);
+function enc(str){
+ const t0=performance.now(),bytes=Array.from(new TextEncoder().encode(str));let checksum=0;bytes.forEach(b=>checksum=(checksum+b)&255);bytes.push(checksum);
+ const seq=[-1,-1,-1,-1];bytes.forEach(b=>seq.push(b>>4,b&15));seq.push(-2,-2);
+ const samples=new Float32Array(seq.length*N);
+ seq.forEach((v,k)=>{const f=v===-1?HDR:v===-2?END:FR[v];for(let i=0;i<N;i++)samples[k*N+i]=.48*Math.min(1,i/40,(N-i)/40)*Math.sin(2*Math.PI*f*i/SR)});
+ return{samples,ms:performance.now()-t0,dur:samples.length/SR,bytes:bytes.length,hex:bytes.map(b=>b.toString(16).padStart(2,'0')).join('')};
+}
+function goertzel(samples,offset,f){const coeff=2*Math.cos(2*Math.PI*f/SR);let a=0,b=0;for(let i=0;i<N;i++){const c=samples[offset+i]+coeff*a-b;b=a;a=c}return a*a+b*b-coeff*a*b}
+function best(samples,offset){let power=-1,index=0;[HDR,...FR,END].forEach((f,j)=>{const p=goertzel(samples,offset,f);if(p>power){power=p;index=j}});return index}
+function dec(samples){
+ const t0=performance.now(),nibbles=[];
+ for(let offset=0;offset+N<=samples.length;offset+=N){const j=best(samples,offset);if(j===0)continue;if(j===17)break;nibbles.push(j-1)}
+ const bytes=[];for(let i=0;i+1<nibbles.length;i+=2)bytes.push(nibbles[i]*16+nibbles[i+1]);
+ const checksum=bytes.pop();let sum=0;bytes.forEach(b=>sum=(sum+b)&255);
+ return{text:new TextDecoder().decode(new Uint8Array(bytes)),ok:sum===checksum,ms:performance.now()-t0};
+}
+function wave(samples,progress=null){
+ const c=$('#cv'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#668cff';ctx.lineWidth=1;ctx.beginPath();
+ const step=Math.max(1,Math.floor(samples.length/w));
+ for(let x=0;x<w;x++){let peak=0;for(let j=0;j<step;j+=5)peak=Math.max(peak,Math.abs(samples[x*step+j]||0));ctx.moveTo(x,h/2-peak*h*.43);ctx.lineTo(x,h/2+peak*h*.43)}ctx.stroke();
+ if(progress!==null){ctx.strokeStyle='#25d5e8';ctx.beginPath();ctx.moveTo(progress*w,0);ctx.lineTo(progress*w,h);ctx.stroke()}
+}
+async function play(samples){
+ return new Promise(resolve=>{
+  wave(samples);if($('#mute').checked)return resolve();
+  AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume();
+  const buffer=AC.createBuffer(1,samples.length,SR);buffer.copyToChannel(samples,0);
+  const node=AC.createBufferSource();node.buffer=buffer;node.connect(AC.destination);const start=AC.currentTime;
+  node.onended=()=>{cancelAnimationFrame(raf);wave(samples);$('#fnow').textContent='Signal complete';resolve()};node.start();
+  const tick=()=>{const p=Math.min(1,(AC.currentTime-start)/(samples.length/SR));const off=Math.min(Math.floor(p*samples.length/N)*N,samples.length-N);const j=best(samples,off);wave(samples,p);$('#fnow').textContent=([HDR,...FR,END][j]||0)+' Hz';if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)raf=requestAnimationFrame(tick)};tick();
+ });
+}
+async function audioLeg(frame,label,index,slot){
+ hl(index);const encoded=enc(frame);sigs[slot]=encoded.samples;$('#sig').textContent=`${label} · ${encoded.dur.toFixed(2)} s · ${encoded.bytes} bytes · encoding ${encoded.ms.toFixed(1)} ms`;$('#hex').textContent=encoded.hex;wave(encoded.samples);
+ hl(index+1);await play(encoded.samples);hl(index+2);const decoded=dec(encoded.samples);
+ $('#sig').innerHTML=`<b>${esc(label)}</b> · ${encoded.dur.toFixed(2)} s · encode ${encoded.ms.toFixed(1)} ms · decode ${decoded.ms.toFixed(1)} ms · <span class="${decoded.ok&&decoded.text===frame?'success-text':'error-text'}">${decoded.ok&&decoded.text===frame?'✓ Checksum verified':'✕ Decode failed'}</span>`;
+ return{encoded,decoded,match:decoded.ok&&decoded.text===frame};
+}
+function replay(i){if(sigs[i])play(sigs[i]);else toast('Run a communication first.')}
+function parseFrame(value){return Object.fromEntries(value.split('|').slice(1).map(part=>{const i=part.indexOf(':');return i<0?[part,'']:[part.slice(0,i),part.slice(i+1)]}))}
+$('#send').addEventListener('click',async()=>{
+ const message=$('#msg').value.trim();if(!message)return;
+ $('#err').textContent='';$('#send').disabled=true;let id='----',aMs=0,bMs=0,encMs=0,decMs=0,okCount=0,ratio=0;
+ ['a_j','l_j','b_j'].forEach(k=>$('#'+k).textContent='—');$('#ans').textContent='Processing request…';$('#ansd').textContent='';
+ try{
+  const demo=!$('#live').checked,lang=$('#lang').value;
+  hl(0);$('#a_s').textContent='Planning request…';
+  const A=await api('/api/agent-a',{message,lang,demo});id=A.id;aMs=A.ms;ratio=A.compression?.ratio||0;
+  $('#a_s').textContent='Structured request generated · '+A.mode;$('#a_j').textContent=JSON.stringify(A.structured,null,2);
+  hl(2);$('#l_s').textContent='Frame prepared · ID '+id;$('#l_j').textContent=A.frame;
+  $('#chk').innerHTML=(A.checks||[]).map(c=>`<div class="${c[1]?'success-text':'error-text'}">${c[1]?'✓':'!'} ${esc(c[0])}</div>`).join('');
+  const c=A.compression||{};$('#comp').innerHTML=`Original: <b>${c.orig_chars??0}</b> characters (~${c.tok_orig??0} tokens)<br>Structured: <b>${c.struct_chars??0}</b> characters (~${c.tok_struct??0} tokens)<br>Ratio: <b>${c.ratio??0}</b><pre>${esc(c.compact||'')}</pre><span class="muted">Token estimate uses characters ÷ 4. This is an experimental estimate, not measured token usage.</span>`;
+  const L1=await audioLeg(A.frame,'Agent A → Agent B request',4,0);encMs+=L1.encoded.ms;decMs+=L1.decoded.ms;okCount+=Number(L1.match);if(!L1.match)throw new Error('Request audio frame could not be decoded.');
+  const P=parseFrame(L1.decoded.text);$('#b_s').textContent='Decoded request received';$('#b_j').textContent=`MSG=${P.MSG}\nINTENT=${P.INTENT}\nACTION=${P.ACTION}\nPRIORITY=${P.PRIORITY}\nTASK=${P.TASK}`;
+  hl(7);const B=await api('/api/agent-b',{id:P.MSG,intent:P.INTENT,action:P.ACTION,priority:P.PRIORITY,task:P.TASK,lang:P.LANG||lang,demo,mask:$('#mask').checked});bMs=B.ms;
+  $('#b_s').textContent='Response generated · '+(demo?'Demo':'Live AI');
+  hl(8);const L2=await audioLeg(B.frame,'Agent B → Agent A response',10,1);encMs+=L2.encoded.ms;decMs+=L2.decoded.ms;okCount+=Number(L2.match);if(!L2.match)throw new Error('Response audio frame could not be decoded.');
+  const R=parseFrame(L2.decoded.text);$('#ans').textContent=B.answer;$('#ans').dir=lang==='ar'?'rtl':'ltr';
+  $('#ansd').textContent='Audio frame verified. The response text is returned separately by the API; the audio frame carries a short result summary.'+(B.sources?.length?' · Sources: '+B.sources.join(', '):'');
+  renderVerify(B,A);
+  if($('#tts').checked)speak(B.answer,lang);hl(11);
+  const V=B.verification||{};
+  await api('/api/telemetry',{id,ok:true,a_ms:aMs,b_ms:bMs,enc_ms:encMs,dec_ms:decMs,ratio,acc:okCount/2,v_conf:Number(V.confidence||0),v_ok:B.verification?(B.verification.consistent?1:0):-1,lang,models:(B.models||[]).map(m=>m.role+'='+m.model).join(';')});
+  last={A,P,B};gw();loadOverview().catch(()=>{});toast('Communication completed successfully.');
+ }catch(e){
+  $('#err').textContent=e.message;$('#ans').textContent='The communication could not be completed.';$('#ansd').textContent=e.message;
+  if(id!=='----')await api('/api/telemetry',{id,ok:false,a_ms:aMs,b_ms:bMs,enc_ms:encMs,dec_ms:decMs,ratio,acc:okCount/2}).catch(()=>{});
+  toast(e.message);
+ }finally{$('#send').disabled=false;api('/api/logs?limit=8').then(renderConsoleLogs).catch(()=>{})}
+});
+function renderConsoleLogs(rows){$('#overview-logs').innerHTML=rows.map(x=>`<div class="activity"><span class="activity-mark"></span><div class="activity-main"><strong>${esc(x.event)}</strong><div>${esc(x.ts)} · ${esc(x.src)} → ${esc(x.dst)}</div></div></div>`).join('')||'<div class="empty">No activity recorded yet.</div>'}
+function gw(){if(!last)return;const{A,B}=last;$('#gw').innerHTML=`<div>Route: <strong>AGENT_A → AGENTLINK → AGENT_B</strong></div><div class="muted" style="margin:7px 0">Message ID: ${esc(A.id)}</div><div>Protocol path: JSON → AL/1 frame → synthesized audio → AL/1 frame</div><div class="divider"></div>${(A.checks||[]).map(c=>`<div class="${c[1]?'success-text':'error-text'}">${c[1]?'✓':'!'} ${esc(c[0])}</div>`).join('')}<pre>${esc(A.frame)}</pre><div class="small muted" style="margin-top:8px">Agent B processing time: ${Number(B.ms||0).toFixed(1)} ms</div>`}
+function renderVerify(B,A){
+ const el=$('#verify'),row=$('#modelrow'),list=[...(A&&A.models||[]),...(B.models||[])],v=B.verification;
+ row.textContent=list.length?'Models this run: '+list.map(m=>`${m.role} → ${m.model} (${Math.round(Number(m.ms)||0)} ms)`).join(' · '):'';
+ if(!v){el.innerHTML='Agent C skipped this run — verification needs Live AI mode.';return}
+ el.innerHTML=`<div class="row"><span class="badge ${v.consistent?'green':'amber'}">${v.consistent?'✓ Consistent':'! Flagged'}</span><span class="small muted">Confidence ${Math.round((Number(v.confidence)||0)*100)}% · ${esc(v.model||'')}</span></div>${v.summary?`<div class="small" style="margin-top:7px">${esc(v.summary)}</div>`:''}${(v.flags||[]).map(f=>`<div class="error-text small" style="margin-top:5px">• ${esc(f)}</div>`).join('')}`;
+}
+async function perm(agent,action){try{await api('/api/permission',{agent,action});$('#pm').innerHTML=`<span class="success-text">✓ ${esc(agent)} is allowed to perform ${esc(action)}.</span>`}catch(e){$('#pm').innerHTML=`<span class="error-text"><b>Access denied</b><br>${esc(e.message)}</span>`}}
+async function regLoad(){
+ const rows=await api(`/api/registry?q_=${encodeURIComponent($('#rq').value)}&status=${encodeURIComponent($('#rs').value)}`);
+ $('#rl').innerHTML=rows.map(a=>`<article class="card agent-card"><div class="card-head"><span class="badge ${a.status==='Online'?'green':'red'}">${esc(a.status)}</span><span class="small muted">#${a.id}</span></div><h3>${esc(a.name)}</h3><div class="small muted">${esc(a.company||'Independent agent')}</div><p>${esc(a.description||'No description provided.')}</p><div>${String(a.capabilities||'').split(',').filter(Boolean).map(x=>`<span class="badge" style="margin:2px">${esc(x.trim())}</span>`).join('')}</div><div class="divider"></div><div class="agent-meta">Languages: ${esc(a.languages)}<br>Protocol: ${esc(a.protocol)}<br>Security: ${esc(a.security)}</div><button class="btn danger small-btn" style="margin-top:12px" onclick="regDel(${a.id})">Remove agent</button></article>`).join('')||'<div class="empty">No agents match your search.</div>';
+}
+async function regAdd(){
+ $('#reg-error').textContent='';
+ try{if(!$('#n').value.trim())throw new Error('Agent name is required.');
+ await api('/api/registry',{name:$('#n').value.trim(),company:$('#co').value,description:$('#d').value,capabilities:$('#cap').value,languages:$('#lg2').value,status:$('#st').value,protocol:$('#pr').value,security:$('#se').value});
+ $('#n').value='';await regLoad();toast('Agent registered.');}
+ catch(e){$('#reg-error').textContent=e.message}
+}
+async function regDel(id){if(!confirm('Remove this agent from your registry?'))return;try{await api('/api/registry/'+id,null,'DELETE');await regLoad();toast('Agent removed.')}catch(e){toast(e.message)}}
+async function met(){
+ const m=await api('/api/metrics');
+ const cards=[['Messages',m.messages],['Successful',m.ok],['Failed',m.failed],['Average total',m.avg_total_ms+' ms','Includes model response time'],['Agent A',m.avg_agent_a_ms+' ms'],['Agent B',m.avg_agent_b_ms+' ms'],['Audio encode',m.avg_encode_ms+' ms'],['Audio decode',m.avg_decode_ms+' ms'],['Decode accuracy',m.decode_accuracy_pct+'%'],['Compression ratio',m.avg_compression_ratio],['Agent C verified',m.verified_runs+' runs','Pass rate '+m.verification_pass_pct+'%'],['Verifier confidence',m.avg_verify_confidence_pct+'%','Scored by the third model']];
+ $('#mk').innerHTML=cards.map(x=>`<div class="card metric-card"><div class="metric">${esc(x[1]??0)}</div><div class="metric-foot">${esc(x[0])}${x[2]?` · ${esc(x[2])}`:''}</div></div>`).join('');
+ const recent=(m.recent||[]).slice().reverse(),max=Math.max(1,...recent.map(x=>Number(x.t)||0));
+ $('#mb').innerHTML=recent.map(x=>`<div title="${esc(x.id)} · ${Number(x.t||0).toFixed(1)} ms" style="flex:1;min-width:8px;height:${Math.max(3,(Number(x.t||0)/max)*100)}%;background:linear-gradient(180deg,var(--cyan),var(--blue));border-radius:5px 5px 0 0"></div>`).join('')||'<span class="muted small">No telemetry available.</span>';
+ const logs=await api('/api/logs?limit=40');
+ $('#lt').querySelector('tbody').innerHTML=logs.map(x=>`<tr><td>${esc(x.ts)}</td><td>${esc(x.src)} → ${esc(x.dst)}</td><td>${esc(x.event)}</td><td>${esc(x.detail)}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No log events recorded.</td></tr>';
+}
+async function docLoad(){
+ const rows=await api('/api/docs');
+ $('#dl').innerHTML=rows.map(d=>`<tr><td><strong>${esc(d.name)}</strong></td><td>${(d.size/1024).toFixed(1)} KB</td><td>${esc(d.created)}</td><td><button class="btn danger small-btn" onclick="docDel(${d.id})">Delete</button></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No documents uploaded yet.</td></tr>';
+}
+async function docAdd(){
+ $('#derr').textContent='';const name=$('#dn').value.trim()||'note.txt',content=$('#dc').value;
+ if(!content.trim()){ $('#derr').textContent='Add document content first.';return}
+ try{await api('/api/docs',{name,content});$('#dc').value='';$('#dn').value='';$('#doc-file').value='';await docLoad();toast('Document saved.')}
+ catch(e){$('#derr').textContent=e.message}
+}
+function docFile(input){const file=input.files?.[0];if(!file)return;if(file.size>200000){$('#derr').textContent='File exceeds the 200 KB limit.';input.value='';return}const reader=new FileReader();reader.onload=()=>{$('#dn').value=file.name;$('#dc').value=String(reader.result||'')};reader.onerror=()=>$('#derr').textContent='Could not read this file.';reader.readAsText(file)}
+async function docDel(id){if(!confirm('Delete this document?'))return;try{await api('/api/docs/'+id,null,'DELETE');await docLoad();toast('Document deleted.')}catch(e){toast(e.message)}}
+async function upLoad(){
+ const rows=await api('/api/files');
+ $('#fl').innerHTML=rows.map(f=>`<tr><td><strong>${esc(f.name)}</strong></td><td><span class="badge">${esc(f.kind)}</span></td><td>${(f.bytes/1024).toFixed(1)} KB</td><td>${f.chars>0?(f.chars/1024).toFixed(1)+' KB':'<span class="error-text">no text</span>'}</td><td>${esc(f.created)}</td><td><div class="row"><button class="btn secondary small-btn" onclick="upView(${f.id})">Preview</button><button class="btn secondary small-btn" onclick="upDown(${f.id},'${esc(f.name)}')">Download</button><button class="btn danger small-btn" onclick="upDel(${f.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="muted">No files uploaded yet.</td></tr>';
+}
+async function upAdd(files){
+ const status=$('#up-status');
+ for(const file of [...files]){
+  status.textContent='Uploading '+file.name+'…';
+  const form=new FormData();form.append('file',file);
+  try{
+   const response=await fetch('/api/files',{method:'POST',headers:{'Authorization':'Bearer '+TOK},body:form});
+   const data=await response.json().catch(()=>({}));
+   if(response.status===401){showLogin();throw new Error('Your session has expired. Please sign in again.')}
+   if(!response.ok)throw new Error(typeof data.detail==='string'?data.detail:'Upload failed');
+   status.textContent='✓ '+data.name+' · '+((data.chars/1024).toFixed(1))+' KB of text extracted'+(data.searchable?'':' — no text layer found');
+  }catch(e){status.innerHTML='<span class="error-text">'+esc(file.name)+': '+esc(e.message)+'</span>'}
+ }
+ $('#up-file').value='';
+ await upLoad();
+}
+async function upView(id){
+ try{
+  const f=await api('/api/files/'+id);
+  $('#up-preview').innerHTML='<div class="divider"></div><strong>'+esc(f.name)+'</strong><span class="small muted"> · '+esc(f.kind)+' · '+f.chars+' characters'+(f.truncated?' (first 20,000 shown)':'')+'</span><pre style="max-height:300px">'+esc(f.text)+'</pre>';
+  $('#up-preview').scrollIntoView({behavior:'smooth',block:'nearest'});
+ }catch(e){toast(e.message)}
+}
+async function upDown(id,name){
+ try{
+  const response=await fetch('/api/files/'+id+'/raw',{headers:{'Authorization':'Bearer '+TOK}});
+  if(response.status===401){showLogin();throw new Error('Your session has expired. Please sign in again.')}
+  if(!response.ok)throw new Error('Download failed ('+response.status+')');
+  const url=URL.createObjectURL(await response.blob());
+  const link=document.createElement('a');link.href=url;link.download=name;
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+ }catch(e){toast(e.message)}
+}
+async function upDel(id){if(!confirm('Delete this file and its extracted text?'))return;try{await api('/api/files/'+id,null,'DELETE');$('#up-preview').innerHTML='';await upLoad();toast('File removed.')}catch(e){toast(e.message)}}
+(()=>{
+ const zone=$('#drop');
+ ['dragenter','dragover'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.style.borderColor='var(--cyan)'}));
+ ['dragleave','drop'].forEach(ev=>zone.addEventListener(ev,e=>{e.preventDefault();zone.style.borderColor=''}));
+ zone.addEventListener('drop',e=>{const files=[...(e.dataTransfer?.files||[])];if(files.length)upAdd(files)});
+ zone.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON')$('#up-file').click()});
+})();
+async function tkLoad(){
+ const rows=await api('/api/tasks');
+ $('#tl').innerHTML=rows.map(t=>`<div class="card" style="margin-bottom:10px"><div class="card-head"><div><h3 class="card-title">${esc(t.title)}</h3><div class="small muted" style="margin-top:5px">${t.every_min?'Every '+t.every_min+' minutes':'One-time task'}</div></div><span class="badge ${t.enabled?'green':'amber'}">${t.enabled?'Active':'Completed / paused'}</span></div><div class="small muted">${esc(t.prompt)}</div>${t.last_result?`<pre>${esc(t.last_result)}</pre><div class="small muted" style="margin-top:7px">Last run: ${esc(t.last_run||'—')}</div>`:'<div class="small muted" style="margin-top:7px">No execution result yet.</div>'}<div class="row" style="margin-top:10px"><button class="btn secondary small-btn" onclick="tkRun(${t.id})">Run now</button><button class="btn danger small-btn" onclick="tkDel(${t.id})">Delete</button></div></div>`).join('')||'<div class="empty">No tasks created yet.</div>';
+ await tgLoad();
+}
+async function tkAdd(){
+ $('#terr').textContent='';
+ try{if(!$('#tp').value.trim())throw new Error('Describe what the agents should do.');await api('/api/tasks',{title:$('#tt').value.trim()||'Agent task',prompt:$('#tp').value,every_min:Number($('#te').value)});$('#tp').value='';await tkLoad();toast('Task created.')}
+ catch(e){$('#terr').textContent=e.message}
+}
+async function tkRun(id){try{await api('/api/tasks/'+id+'/run',{});toast('Task execution started.');setTimeout(()=>tkLoad().catch(e=>toast(e.message)),3500)}catch(e){toast(e.message)}}
+async function tkDel(id){if(!confirm('Delete this task?'))return;try{await api('/api/tasks/'+id,null,'DELETE');await tkLoad();toast('Task deleted.')}catch(e){toast(e.message)}}
+function renderTgOverview(s){
+ const message=!s.enabled?'Bot token is not configured':(s.linked?'Telegram chat linked':'Bot configured; no chat linked');
+ $('#ov-tg').textContent=message;
+ const badge=$('#ov-tg-badge');badge.textContent=!s.enabled?'Not configured':(s.linked?'Linked':'Not linked');badge.className='badge '+(!s.enabled?'amber':(s.linked?'green':'amber'));
+}
+async function tgOverviewLoad(){
+ try{renderTgOverview(await api('/api/telegram'))}
+ catch(e){$('#ov-tg').textContent='Status unavailable: '+e.message;const badge=$('#ov-tg-badge');badge.textContent='Unavailable';badge.className='badge red'}
+}
+async function tgLoad(){
+ const s=await api('/api/telegram');
+ renderTgOverview(s);
+ if(!s.enabled){$('#tg').innerHTML='Telegram is not configured. Create a bot with @BotFather, add <code>TELEGRAM_BOT_TOKEN</code> to your backend .env file, then restart the server.';return}
+ $('#tg').innerHTML=`Bot: <strong>@${esc(s.username||'unknown')}</strong> · ${s.linked?'<span class="success-text">Chat linked</span>':'<span class="muted">Not linked</span>'}<div class="row" style="margin-top:10px"><button class="btn" onclick="tgCode()">Create link code</button>${s.linked?'<button class="btn secondary" onclick="tgUnlink()">Unlink chat</button>':''}</div><div id="tgc" class="small" style="margin-top:10px"></div>`;
+}
+async function tgCode(){try{const c=await api('/api/telegram/code',{});$('#tgc').innerHTML=`Open Telegram and message <strong>@${esc(c.username||'your bot')}</strong> with this command:<pre>/link ${esc(c.code)}</pre><span class="muted">This code expires in 10 minutes.</span>`}catch(e){$('#tgc').textContent=e.message}}
+async function tgUnlink(){try{await api('/api/telegram/link',null,'DELETE');await tgLoad();toast('Telegram chat unlinked.')}catch(e){toast(e.message)}}
+function speak(text,lang){try{const utterance=new SpeechSynthesisUtterance(text);utterance.lang=lang==='ar'?'ar-JO':'en-US';speechSynthesis.cancel();speechSynthesis.speak(utterance)}catch(e){}}
+function mic(){
+ const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Speech){$('#err').textContent='Voice input is supported in Chrome or Edge.';return}
+ if(rec){rec.stop();return}
+ rec=new Speech();rec.lang=$('#lang').value==='ar'?'ar-JO':'en-US';rec.interimResults=false;$('#mic').textContent='Stop listening';
+ rec.onresult=e=>{$('#msg').value=e.results[0][0].transcript;if($('#autosend').checked)$('#send').click()};
+ rec.onerror=e=>$('#err').textContent='Microphone error: '+e.error;
+ rec.onend=()=>{rec=null;$('#mic').textContent='🎙 Speak'};
+ try{rec.start()}catch(e){$('#err').textContent=e.message;rec=null;$('#mic').textContent='🎙 Speak'}
+}
+$('#pw').addEventListener('keydown',e=>{if(e.key==='Enter')auth('login')});
+(async()=>{await boot()})();
+</script>
+</body>
+</html>
