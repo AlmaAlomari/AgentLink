@@ -157,7 +157,7 @@ body{background:radial-gradient(ellipse at 62% -18%,rgba(65,121,182,.16),transpa
     <h2 style="font-size:19px;margin:0 0 6px">Welcome back</h2>
     <p class="muted small" style="margin:0 0 18px">Sign in to access your workspace or create a new account.</p>
     <div class="field"><label class="field-label">Email address</label><input class="input" id="em" type="email" autocomplete="username" placeholder="you@example.com"></div>
-    <div class="field"><label class="field-label">Password</label><input class="input" id="pw" type="password" autocomplete="current-password" placeholder="6 characters to sign in, 12 to register"></div>
+    <div class="field"><label class="field-label">Password</label><input class="input" id="pw" type="password" autocomplete="current-password" placeholder="At least 12 characters" minlength="12"></div>
     <div class="row"><button class="btn grow" onclick="auth('login')">Sign in</button><button class="btn secondary grow" onclick="auth('register')">Create account</button></div>
     <div id="aerr" class="error-text" style="margin-top:12px"></div>
     <p class="muted" style="font-size:12px;line-height:1.5;margin:14px 0 0">Prototype notice: use demo data only. Do not enter sensitive personal information.</p>
