@@ -1,0 +1,168 @@
+[
+  {
+    "id": "D409463CC6784AD5B4BADF76B3AC9407",
+    "ok": 1,
+    "a_ms": 1348.89,
+    "b_ms": 2243.38,
+    "enc_ms": 32.700000047683716,
+    "dec_ms": 66.0,
+    "ratio": 0.84,
+    "acc": 1.0,
+    "owner": "ui@example.com",
+    "v_conf": 0.9,
+    "v_ok": 0,
+    "lang": "en",
+    "models": {
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:19:11",
+    "total_ms": 3690.970000047684
+  },
+  {
+    "id": "12292F4E736B43C781945ED8D69C6722",
+    "ok": 1,
+    "a_ms": 1250.94,
+    "b_ms": 2330.91,
+    "enc_ms": 62.0,
+    "dec_ms": 69.60000002384186,
+    "ratio": 0.85,
+    "acc": 1.0,
+    "owner": "ui@example.com",
+    "v_conf": 1.0,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:22:14",
+    "total_ms": 3713.4500000238418
+  },
+  {
+    "id": "F40D345627084581B50EF857A0B97A74",
+    "ok": 1,
+    "a_ms": 1011.79,
+    "b_ms": 1492.52,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 1.05,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.8,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:29:43",
+    "total_ms": 2504.31
+  },
+  {
+    "id": "2627DEE8163D42EC8732C336BD6FB8F2",
+    "ok": 1,
+    "a_ms": 1341.64,
+    "b_ms": 1481.67,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 1.44,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.95,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:29:48",
+    "total_ms": 2823.3100000000004
+  },
+  {
+    "id": "FF182F22A0454DBD8855774AE4E79568",
+    "ok": 1,
+    "a_ms": 1033.84,
+    "b_ms": 1579.45,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 1.19,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.2,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:29:52",
+    "total_ms": 2613.29
+  },
+  {
+    "id": "55FC4D6D2C0F4106A5A90E3F71C5F1B4",
+    "ok": 1,
+    "a_ms": 1035.18,
+    "b_ms": 1928.16,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 1.43,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.2,
+    "v_ok": 0,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:29:57",
+    "total_ms": 2963.34
+  },
+  {
+    "id": "375CE343963848FB9680D16039B3428F",
+    "ok": 1,
+    "a_ms": 972.12,
+    "b_ms": 1617.04,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 1.07,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.5,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:30:01",
+    "total_ms": 2589.16
+  },
+  {
+    "id": "1B1541F4F49C4ED9B05413686977D11B",
+    "ok": 1,
+    "a_ms": 1123.09,
+    "b_ms": 1491.26,
+    "enc_ms": 0.0,
+    "dec_ms": 0.0,
+    "ratio": 0.93,
+    "acc": 1.0,
+    "owner": "bench-figure@example.com",
+    "v_conf": 0.6,
+    "v_ok": 1,
+    "lang": "en",
+    "models": {
+      "planner": "openai/gpt-oss-20b",
+      "analyst": "openai/gpt-oss-120b",
+      "verifier": "qwen/qwen3.8-27b"
+    },
+    "ts": "2026-11-07 18:30:06",
+    "total_ms": 2614.35
+  }
+]
