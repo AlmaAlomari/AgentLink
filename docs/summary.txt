@@ -1,0 +1,14 @@
+Runs analysed : 8
+Successful    : 8 (100.0%)
+Agent A       : 1139.7 ms average
+Agent B       : 1770.5 ms average
+Audio encode  : 47.4 ms average
+Audio decode  : 67.8 ms average
+End to end    : 2939.0 ms average
+Compression   : 110.0% of the original request kept
+                note: above 100% means the structured frame is larger
+                than the request, which only happens for very short prompts
+Decode        : 100.0% mean accuracy
+Verifier      : 64.4% mean confidence
+Figures       : docs\figures\fig1_stage_latency.png, docs\figures\fig2_model_comparison.png, docs\figures\fig3_semantic_compression.png, docs\figures\fig4_decode_accuracy.png, docs\figures\fig5_verification.png, docs\figures\fig6_latency_scatter.png, docs\figures\fig7_corpus.png
+Raw data      : results.csv, results.json

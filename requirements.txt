@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+pydantic
+python-multipart
+pypdf
+python-docx
+# للرسوم البيانية فقط (experiments/benchmark.py):
+matplotlib
